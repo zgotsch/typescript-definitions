@@ -278,7 +278,9 @@ impl Typescriptify {
     }
     fn ts_body_str(&self) -> String {
         let ts = self.body.body.to_string();
+        // println!("ZACH {:?}", ts);
         let ts = patch(&ts);
+        // println!("ZACH {:?}", ts);
         ts.into()
     }
     fn ts_generics(&self, with_bound: bool) -> QuoteT {

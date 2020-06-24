@@ -96,7 +96,9 @@ impl<'a> FieldContext<'a> {
         };
 
         let tp = self.type_to_ts(elem);
-        quote! { #tp[] }
+        let foo = quote! { #tp[] };
+        // println!("Zach {:?}", foo);
+        foo
     }
     /// # convert a `syn::Type` rust type to a
     /// `TokenStream` of typescript type: basically i32 => number etc.

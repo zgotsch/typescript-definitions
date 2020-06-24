@@ -5,7 +5,7 @@ use typescript_definitions::{TypeScriptify, TypeScriptifyTrait, TypescriptDefini
 
 use serde::Serialize;
 // use serde::de::value::Error;
-use insta::assert_snapshot_matches;
+use insta::assert_snapshot;
 use wasm_bindgen::prelude::*;
 
 use std::io::Write;
@@ -46,7 +46,7 @@ fn verify_untagged_enum() {
         V2 { id: i32, attr2: Vec<String> },
     }
     let verify_untagged_enum = prettier(&Untagged::type_script_guard().unwrap());
-    assert_snapshot_matches!(verify_untagged_enum,
+    assert_snapshot!(verify_untagged_enum,
         @r###"export const isUntagged = (obj: any): obj is Untagged => {
   if (obj == undefined) return false;
   if (
@@ -100,7 +100,7 @@ fn verify_first_only() {
     }
 
     let verify_first_only = prettier(&S::type_script_guard().unwrap());
-    assert_snapshot_matches!(verify_first_only,
+    assert_snapshot!(verify_first_only,
     @r###"export const isS = (obj: any): obj is S => {
   if (obj == undefined) return false;
   if (obj.vals === undefined) return false;
@@ -142,7 +142,7 @@ fn verify_typescript_enum() {
         Blue,
     }
     let verify_typescript_enum = prettier(&TyEnum::type_script_guard().unwrap());
-    assert_snapshot_matches!(verify_typescript_enum,
+    assert_snapshot!(verify_typescript_enum,
         @r###"export const isTyEnum = (obj: any): obj is TyEnum => {
   if (!(obj === "Red" || obj === "Green" || obj === "Blue")) return false;
   return true;
@@ -158,7 +158,7 @@ fn verify_ts_as() {
         b: i32,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         prettier(&Sub::type_script_guard().unwrap()),
         @r###"export const isSub = (obj: any): obj is Sub => {
   if (obj == undefined) return false;
@@ -184,7 +184,7 @@ fn verify_option() {
         maybe: Option<String>,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
     prettier(&Maybe::type_script_guard().unwrap()),
         @r###"export const isMaybe = (obj: any): obj is Maybe => {
   if (obj == undefined) return false;

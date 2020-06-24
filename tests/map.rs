@@ -4,7 +4,7 @@ use typescript_definitions::{TypeScriptify, TypeScriptifyTrait, TypescriptDefini
 
 use serde::Serialize;
 // use serde::de::value::Error;
-use insta::assert_snapshot_matches;
+use insta::assert_snapshot;
 use wasm_bindgen::prelude::*;
 
 #[test]
@@ -20,7 +20,7 @@ fn as_byte_string() {
     let s = S {
         image: vec![1, 2, 3, 4, 5, 244],
     };
-    assert_snapshot_matches!(
+    assert_snapshot!(
         serde_json::to_string(&s).unwrap(),
         @r###"{"image":"\\x01\\x02\\x03\\x04\\x05\\xf4"}"###
 
@@ -36,11 +36,13 @@ fn untagged_enum() {
         V2 { id: i32, attr2: Vec<String> },
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Untagged::type_script_ify(),
-        @r###"export type Untagged = 
- | { id: number; attr: string } 
- | { id: number; attr2: string[] };"###
+        @r###"
+    export type Untagged = 
+     | { id: number; attr: string } 
+     | { id: number; attr2: string[] };
+    "###
 
     )
 }
@@ -54,12 +56,14 @@ fn external_enum() {
         V2 { id: i32, attr2: Vec<String> },
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
     External::type_script_ify(),
-        @r###"// Has documentation.
-export type External = 
- | { V1: { id: number; attr: string } } 
- | { V2: { id: number; attr2: string[] } };"###
+        @r###"
+    // Has documentation.
+    export type External = 
+     | { V1: { id: number; attr: string } } 
+     | { V2: { id: number; attr2: string[] } };
+    "###
     )
 }
 
@@ -75,7 +79,7 @@ fn where_clause_ok() {
         b: T,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Where::<i32>::type_script_ify(),
         @"export type Where<T> = { a: number; b: T };"
 
@@ -95,7 +99,7 @@ fn fullpath_chrono() {
         b: T,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Where::<i32>::type_script_ify(),
         @"export type Where<T> = { datetime: string; b: T };"
 
@@ -109,7 +113,7 @@ fn check_ts_as() {
         b: i32,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Sub::type_script_ify(),
         @"export type Sub = { b: number[] };"
 

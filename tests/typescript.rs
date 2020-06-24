@@ -6,7 +6,7 @@ use serde::Serialize;
 use std::borrow::Cow;
 // use serde::de::value::Error;
 
-use insta::assert_snapshot_matches;
+use insta::assert_snapshot;
 use wasm_bindgen::prelude::*;
 
 #[cfg(feature = "test")]
@@ -15,7 +15,7 @@ fn unit_struct() {
     #[derive(Serialize, TypescriptDefinition)]
     struct Unit;
 
-    assert_snapshot_matches!(Unit___typescript_definition(),@"export type Unit = {};")
+    assert_snapshot!(Unit___typescript_definition(),@"export type Unit = {};")
 }
 #[cfg(feature = "test")]
 #[test]
@@ -23,7 +23,7 @@ fn newtype_struct() {
     #[derive(Serialize, TypescriptDefinition)]
     struct Newtype(i64);
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Newtype___typescript_definition(),
         @"export type Newtype = number;"
     )
@@ -34,7 +34,7 @@ fn tuple_struct() {
     #[derive(Serialize, TypescriptDefinition)]
     struct Tuple(i64, String);
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Tuple___typescript_definition(),
         @"export type Tuple = [ number , string ];"
     )
@@ -48,7 +48,7 @@ fn struct_with_borrowed_fields() {
         cow: Cow<'a, str>,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Borrow___typescript_definition(),
         @"export type Borrow = { raw: string; cow: string };"
     )
@@ -64,7 +64,7 @@ fn struct_point_with_field_rename() {
         y: i64,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Point___typescript_definition(),
         @"export type Point = { X: number; Y: number };"
 
@@ -80,7 +80,7 @@ fn struct_with_array() {
         z: Option<f64>,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Point___typescript_definition(),
         @"export type Point = { x: number[]; y: number; z: number | null };"
 
@@ -99,7 +99,7 @@ fn struct_with_tuple() {
         z: HashMap<String, i32>,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Point2___typescript_definition(),
         @"export type Point2 = { x: [ number , string , number[] ]; y: number; v: number[]; z: { [ key: string ]: number } };"
 
@@ -121,13 +121,12 @@ fn enum_with_renamed_newtype_variants() {
         Internal(i32),
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Enum___typescript_definition(),
-        @r###"export type Enum = 
- | { kind: "Var1"; fields: boolean } 
- | { kind: "Var2"; fields: number } 
+        @r###"export type Enum =
+ | { kind: "Var1"; fields: boolean }
+ | { kind: "Var2"; fields: number }
  | { kind: "Var3"; fields: string };"###
-
     )
 }
 #[cfg(feature = "test")]
@@ -140,7 +139,7 @@ fn enum_with_unit_variants() {
         V3,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Enum___typescript_definition(),
         @r###"export enum Enum { V1 = "V1" , V2 = "V2" , V3 = "V3" };"###
     )
@@ -156,11 +155,11 @@ fn enum_with_tuple_variants() {
         V3(i64, u64),
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
     Enum___typescript_definition(),
-        @r###"export type Enum = 
- | { kind: "V1"; fields: [ number , string ] } 
- | { kind: "V2"; fields: [ number , boolean ] } 
+        @r###"export type Enum =
+ | { kind: "V1"; fields: [ number , string ] }
+ | { kind: "V2"; fields: [ number , boolean ] }
  | { kind: "V3"; fields: [ number , number ] };"###
     )
 }
@@ -189,11 +188,11 @@ fn enum_with_struct_variants_and_renamed_fields() {
         },
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Enum___typescript_definition(),
-        @r###"export type Enum = 
- | { kind: "V1"; Foo: boolean } 
- | { kind: "V2"; Bar: number; Baz: number } 
+        @r###"export type Enum =
+ | { kind: "V1"; Foo: boolean }
+ | { kind: "V2"; Bar: number; Baz: number }
  | { kind: "V3"; Quux: string };"###
 
     )
@@ -209,11 +208,11 @@ fn enum_with_struct_and_tags() {
         V3 { quux: String },
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Enum___typescript_definition(),
-        @r###"export type Enum = 
- | { id: "V1"; content: { foo: boolean } } 
- | { id: "V2"; content: { bar: number; baz: number } } 
+        @r###"export type Enum =
+ | { id: "V1"; content: { foo: boolean } }
+ | { id: "V2"; content: { bar: number; baz: number } }
  | { id: "V3"; content: { quux: string } };"###
 
     )
@@ -234,7 +233,7 @@ fn struct_with_attr_refering_to_other_type() {
         c: Result<i32, &'static str>,
         d: Result<Option<i32>, String>,
     }
-    assert_snapshot_matches!(
+    assert_snapshot!(
         A___typescript_definition(),
         @"export type A = { x: number; b: B<number>; cnew: { Ok: number } | { Err: string }; d: { Ok: number | null } | { Err: string } };"
     )
@@ -248,7 +247,7 @@ fn struct_typescriptify() {
         c: Result<i32, &'static str>,
         d: Result<Option<i32>, String>,
     }
-    assert_snapshot_matches!(
+    assert_snapshot!(
         A::type_script_ify(),
         @"export type A = { x: number; c: { Ok: number } | { Err: string }; d: { Ok: number | null } | { Err: string } };"
     )
@@ -263,7 +262,7 @@ fn cow_as_pig() {
         pig: Pig<'a, str>,
         cow: ::std::borrow::Cow<'a, str>,
     }
-    assert_snapshot_matches!(
+    assert_snapshot!(
         S::type_script_ify(),
         @"export type S = { pig: Pig<string>; cow: string };"
     )
@@ -277,9 +276,9 @@ fn unit_enum_is_enum() {
         Green,
         Blue,
     }
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Color::type_script_ify(),
-        @r###"export enum Color { Red = "Red" , Green = "Green" , Blue = "Blue" };"###
+        @r###"export enum Color { Red = "Red", Green = "Green", Blue = "Blue" };"###
 
     )
 }
@@ -293,9 +292,9 @@ fn struct_has_function() {
         get: fn(arg: &i32) -> String,
         get2: Fn(T, i32) -> Option<i32>,
     }
-    assert_snapshot_matches!(
+    assert_snapshot!(
         API::<i32>::type_script_ify(),
-        @"export type API<T> = { key: number; a: T; get: ( arg: number ) => string; get2: ( T , number ) => number | null };"
+        @"export type API<T> = { key: number; a: T; get: (arg: number) => string; get2: (T, number) => number | null };"
     )
 }
 
@@ -308,7 +307,7 @@ fn struct_with_traitbounds() {
         key: i32,
         a: T,
     }
-    assert_snapshot_matches!(
+    assert_snapshot!(
         API::<i32>::type_script_ify(),
         @"export type API<T> = { key: number; a: T };"
 
@@ -323,7 +322,7 @@ fn struct_with_serde_skip() {
         #[serde(skip)]
         b: f64,
     }
-    assert_snapshot_matches!(
+    assert_snapshot!(
         S::type_script_ify(),
         @"export type S = { key: number; aa: number };"
 
@@ -346,12 +345,14 @@ fn enum_with_serde_skip() {
         #[serde(skip)]
         Z,
     }
-    assert_snapshot_matches!(
-    S::type_script_ify(),
-        @r###"export type S = 
- | { kind: "A" } 
- | { kind: "E"; fields: { key: number; a: number } } 
- | { kind: "F"; fields: [ number , string ] };"###
+    assert_snapshot!(
+        S::type_script_ify(),
+        @r###"
+    export type S = 
+     | { kind: "A" } 
+     | { kind: "E"; fields: { key: number; a: number } } 
+     | { kind: "F"; fields: [number, string] };
+    "###
     )
 }
 
@@ -365,7 +366,7 @@ fn struct_with_phantom_data_skip() {
         a: i32,
         b: PhantomData<String>,
     }
-    assert_snapshot_matches!(
+    assert_snapshot!(
         S::type_script_ify(),
         @"export type S = { key: number; a: number };"
     )
@@ -384,7 +385,7 @@ fn struct_with_pointers_and_slices() {
         buffer2: Vec<u8>,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         Pointers___typescript_definition(),
         @r###"// This is a doc comment
 // on multiple lines.
@@ -401,7 +402,7 @@ fn struct_with_one_field_is_transparent() {
         a: i32,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         One___typescript_definition(),
         @"export type One = number;"
 
@@ -419,7 +420,7 @@ fn struct_with_two_fields_is_transparent_with_skip() {
         b: i32,
     }
 
-    assert_snapshot_matches!(
+    assert_snapshot!(
         TwoSkip___typescript_definition(),
         @"export type TwoSkip = number;"
 

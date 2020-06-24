@@ -32,99 +32,43 @@ use std::borrow::Cow;
 
 // no field names have anything but ascii at the moment.
 
-const TRIPPLE_EQ: &str = "\"__============__\"";
+const TRIPLE_EQ: &str = "\"__============__\"";
 const NL_PATCH: &str = "\"__nlnlnlnl__\"";
 // type N = [(&'static str, &'static str); 10];
-const NAMES: [(&str, &str); 13] = [
-    ("brack", r"\s*\[\s+\]"),
-    ("brace", r"\{\s+\}"),
-    ("colon", r"\s+[:]\s"),
-    ("enl", r"\n+\}"),
-    ("fnl", r"\{\n+"),
-    ("te", TRIPPLE_EQ), // for ===
-    ("lt", r"\s<\s"),
-    ("gt", r"\s>(\s|$)"),
-    ("semi", r"\s+;"),
-    ("call", r"\s\(\s+\)\s"),
-    ("dot", r"\s\.\s"),
-    ("nlpatch", NL_PATCH), // for adding newlines to output string
-    ("nl", r"\n+"),        // last!
+const PATCHES_SPEC: [(&str, &str, &str); 13] = [
+    ("brack", r"\s+\[\s*\]", "[]"),
+    ("brace", r"\{\s+\}", "{}"),
+    ("colon", r"\s+[:]\s+", ": "),
+    ("enl", r"\s*\n+\}", " }"),
+    ("fnl", r"\{\n+\s*", "{ "),
+    ("te", TRIPLE_EQ, "==="),
+    ("lt", r"\s<\s", "<"),
+    ("gt", r"\s>(\s|$)", ">"),
+    ("semi", r"\s+;", ";"),
+    ("call", r"\s\(\s+\)\s", " () "),
+    ("dot", r"\s\.\s", "."),
+    ("nl", r"\s*\n+\s*", " "), // need to do this before nl_patch, and after everything that cares about spaces
+    ("nlpatch", NL_PATCH, "\n"), // for adding newlines to output string
 ];
+
 lazy_static! {
-    static ref RE: Regex = {
-        let v = NAMES
-            .iter()
-            .map(|(n, re)| format!("(?P<{}>{})", n, re))
-            .collect::<Vec<_>>()
-            .join("|");
-        Regex::new(&v).unwrap()
-    };
+    static ref PATCHES: Vec<(&'static str, Regex, &'static str)> = PATCHES_SPEC
+        .iter()
+        .map(|(n, re, s)| (*n, Regex::new(re).unwrap(), *s))
+        .collect();
 }
 
-trait Has {
-    fn has(&self, s: &'static str) -> bool;
-    fn key(&self) -> &'static str;
-}
-
-impl Has for Captures<'_> {
-    #[inline]
-    fn has(&self, s: &'static str) -> bool {
-        self.name(s).is_some()
+pub fn patch(s: &str) -> String {
+    let mut s = s.to_owned();
+    for (_n, re, replacement) in &*PATCHES {
+        s = re.replace_all(&s, *replacement).into_owned();
     }
-
-    fn key(&self) -> &'static str {
-        for n in &NAMES {
-            if self.has(n.0) {
-                return n.0;
-            }
-        }
-        "?"
-    }
-    /*
-    fn key(&self) -> &'static str {
-        for n in RE.capture_names() {
-            if let Some(m) = n {
-                if self.has(m) {
-                    return m;
-                }
-            }
-        };
-
-        "?"
-    }
-    */
-}
-
-// TODO: where does the newline come from? why the double spaces?
-// maybe use RegexSet::new(&[.....])
-pub fn patch(s: &str) -> Cow<'_, str> {
-    RE.replace_all(s, |c: &Captures| {
-        let key = c.key();
-        let m = match key {
-            "brace" => "{}",
-            "brack" => "[]",
-            "colon" => ": ",
-            "fnl" => "{ ",
-            // "bar" => "\n  | {",
-            "enl" => " }",
-            "nl" => " ",
-            // "result" => "|",
-            "te" => "===",
-            "lt" => "<",
-            "gt" => ">",
-            "semi" => ";",
-            "dot" => ".",
-            "call" => " () ",
-            "nlpatch" => "\n",
-            _ => return Cow::Owned(c.get(0).unwrap().as_str().to_owned()), // maybe should just panic?
-        };
-        Cow::Borrowed(m)
-    })
+    s
 }
 
 #[inline]
 pub fn eq() -> Literal {
-    Literal::string(&TRIPPLE_EQ[1..TRIPPLE_EQ.len() - 1])
+    Literal::string(&TRIPLE_EQ[1..TRIPLE_EQ.len() - 1])
 }
 
 #[inline]
